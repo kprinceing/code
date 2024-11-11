@@ -1,14 +1,19 @@
 *----------------------------------------------------------------------------------------------------*
 /*【合并逻辑一：基金数据--姓名+年份 1：1--专利数据】*/
 /*【NSFC2013-2022-QN.dta,删除重名的人，变成balanced panel data，合并专利数据】*/
-//sdq办公室
+/* //sdq办公室
 cd "F:\基金研究\data\2013--2022面青\stata"
 //sdq家
 cd "E:\坚果云\基金研究\data\2013--2022面青\stata"
 //笔记本
-cd "D:\基金研究\data\2013--2022面青\stata"
+cd "D:\基金研究\data\2013--2022面青\stata" */
 
-use  "NSFC2013-2022-QN.dta", clear
+
+local project_path "/Users/yansong/Dropbox/nutstore_files/基金研究"
+
+
+use  "`project_path'/data/2013_2022面青/NSFC2013-2022-QN.dta", clear
+
 //obs3135
 /*【删除重名的人】*/
 drop dup1 school1 error1 i //之前生成的dup1和school1是在更新申请部门之前的，更新申请部门估后重新计算dup1和school1
@@ -47,7 +52,7 @@ drop if dup1==1&school1==1  //161个obs48个名字，每个名词重复的次数
 drop dup dup1 school  school1
 //obs 2974
 /*【变成balanced panel】*/
-drop id
+capture drop id 
 replace 申请部门估="未知学院" if 申请部门估==""
 egen id=group(姓名 申请部门估)  //因为没有重名的人，为了保留住更多的观测值，将确实的申请部门补上再生成id
 
@@ -64,7 +69,7 @@ gsort id - 年份
 bysort id: carryforward 姓名 申请部门 申请部门1 申请部门估, replace
 
 /*【合并专利数据】*/
-merge 1:1 姓名 年份 using "F:\基金研究\data\patent2013-2022.dta", generate(_merge_patent)
+merge 1:1 姓名 年份 using "`project_path'/data/patent2013-2022.dta", generate(_merge_patent)
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -79,7 +84,7 @@ drop if _merge_patent==2
 
 tab 申请部门估 if _merge_patent==3   //申请部门估还是有同学院不用名的情况
 
-save "NSFC2013-2022-QN-patent.dta", replace
+save "`project_path'/data/2013_2022面青/NSFC2013-2022-QN-patent.dta", replace
 
 
 

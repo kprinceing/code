@@ -89,8 +89,39 @@ run merge_journal.do
 run regresssions.do
 
 
-************************  patent ************************
-*data location:  "坚果云\基金研究\data\patent2013-2022.dta"
-*生成数据为每人名+每申请年申请的三种类型专利数量，及最终获得授权的专利数量
+************************  专利部分代码 ************************
 
+
+local project_path "/Users/yansong/Dropbox/nutstore_files/基金研究"
+local code_path "`project_path'/code"
+cd "`code_path'"
+
+**************************************************  
+* 生成 NSFC2013-2022-QN
+* data location:  "/data/2013_2022面青/NSFC2013-2022-QN.dta"
+run dataclean_NSFC.do
+
+**************************************************  
+*data location:  "/data/patent2013-2022.dta"
+*生成数据为每人名+每申请年申请的三种类型专利数量，及最终获得授权的专利数量
 run dataclean_patent.do
+
+**************************************************  
+* 合并基金数据和专利数据,用于回归分析
+*data location:  "/data/2013_2022面青/NSFC2013-2022-QN-patent.dta"
+run dataclean_NSFC_QN_patent.do 
+
+
+**************************************************  
+* 回归分析
+* 使用数据: "/data/2013_2022面青/NSFC2013-2022-QN-patent.dta"
+* results output: "graph_patent/"
+
+run regressions_patent.do 
+
+
+
+
+
+
+

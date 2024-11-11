@@ -1,12 +1,15 @@
+
 //发表文章及affiliation
 set more off
 cd "/Users/yansong/Nutstore Files/论文发表2013-2020/scopusPub" 
+
 clear
 local files: dir "/Users/yansong/Nutstore Files/论文发表2013-2020/scopusPub"  files "*.xlsx"
 
-cd "C:\Users\Administrator\Nutstore\1\论文发表2013-2020\scopusPub"
+/* cd "C:\Users\Administrator\Nutstore\1\论文发表2013-2020\scopusPub"
 local files: dir "C:\Users\Administrator\Nutstore\1\论文发表2013-2020\scopusPub"  files "*.xlsx"
-
+ */
+ 
 foreach file in `files'{
              clear
              import excel `file',  firstrow allstring

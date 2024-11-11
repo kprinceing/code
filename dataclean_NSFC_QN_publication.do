@@ -1,9 +1,11 @@
-//sdq办公室
+/* //sdq办公室
 cd "F:\基金研究\data\2013--2022面青\stata"
 //sdq家
 cd "E:\坚果云\基金研究\data\2013--2022面青\stata"
 //笔记本
-cd "D:\基金研究\data\2013--2022面青\stata"
+cd "D:\基金研究\data\2013--2022面青\stata" */
+
+
 
 use  "NSFC2013-2022-QN.dta", clear   // 3135: 姓名-申请部门估-申请年份
 *sort name 申请部门估 年份

@@ -1,19 +1,23 @@
-防误触快捷键
-*删除记录dataclean_NSFC.do
-*NSFC2013-2022-QN.dta删除了有两次青年项目立项的人
-*
-*----------------------------------------------------------------------------------------------------*
-clear
-use "F:\基金研究\data\2013--2022面青\stata\NSFC2013-2022-QN.dta"
+
+local project_path "/Users/yansong/Dropbox/nutstore_files/基金研究"
+cd "`project_path'/data/2013_2022面青"
+
+use NSFC2013-2022-QN-patent,clear 
+
 rename 年份 year
 xtset id year  //id=group(姓名 申请部门估)
-**#
+
+**
 //由于没有重名的，所有（姓名-年份）内申请部门估都是一样的
+
+* 这部分代码目的? what are these variables
 local tt tt_applied1 tt_granted1 tt_applied2 tt_granted2 tt_applied3 tt_granted3
 foreach i of varlist `tt' {
     replace `i'=0 if `i'==.
 }
 
+
+* 这部分代码目的?
 g 立项年份=year if lixiang==1
 bys id: egen 立项次数=total(!missing(立项年份))
 tab 立项次数  //有一个人青年项目立项了两次！！！
@@ -23,6 +27,7 @@ bys id: egen fundyear=max(立项年份)
 order fundyear, after(lixiang)
 drop 立项年份
 
+* 这部分代码目的?
 g grant_t=year-fundyear
 order grant_t, after(fundyear)
 replace grant_t=0 if fundyear==.
@@ -30,6 +35,7 @@ replace grant_t=0 if fundyear==.
 g after_grant=1 if grant_t>0
 order after_grant, after(grant_t)
 replace after_grant=0 if grant<=0
+
 
 g tt_applied=tt_applied1+tt_applied2+tt_applied3
 g tt_granted=tt_granted1+tt_granted2+tt_granted3
@@ -138,7 +144,7 @@ coefplot est*, keep(after_grant)	///
 
 /*	levels(95) legend(label(2 "前一年") label(4 "前二年") ///
 	label(6 "前三年") label(8 "前四年") label(10 "前五年"))		*/	
-graph export "F:\基金研究\graph_patent\ols_overall_patent_application.png", as(png) name("Graph") width(600)height(450) replace
+graph export "`project_path'/graph_patent/ols_overall_patent_application.png", as(png) name("Graph") width(600)height(450) replace
 
 
 *********************************
@@ -185,7 +191,7 @@ coefplot est*, keep(after_grant)	///
 
 /*	levels(95) legend(label(2 "前一年") label(4 "前二年") ///
 	label(6 "前三年") label(8 "前四年") label(10 "前五年"))		*/	
-graph export "F:\基金研究\graph_patent\ols_overall_patent_grantrate.png", as(png) name("Graph") width(600)height(450) replace
+graph export "`project_path'/graph_patent/ols_overall_patent_grantrate.png", as(png) name("Graph") width(600)height(450) replace
 
 *********************************
 sum ptgranted_lead1  //0.45
@@ -225,14 +231,14 @@ grstyle set color black*.7: tick tick_label // set tick and tick label color
 	label(6 "Year 3") label(8 "Year 4") label(10 "Year 5"))	 */
 
 coefplot est*, keep(after_grant)	///
-	xtitle("全部专利累计授权数量(unconditioanl)") ///
+	xtitle("全部专利累计授权数量") ///
 	coeflabels(after_grant = "基金资助后") ///
 	levels(90) legend(label(2 "一年内") label(4 "两年内") ///
 	label(6 "三年内") label(8 "四年内") label(10 "五年内"))			
 
 /*	levels(95) legend(label(2 "前一年") label(4 "前二年") ///
 	label(6 "前三年") label(8 "前四年") label(10 "前五年"))		*/	
-graph export "F:\基金研究\graph_patent\ols_overall_patent_grant.png", as(png) name("Graph") width(600)height(450) replace
+graph export "`project_path'/graph_patent/ols_overall_patent_grant.png", as(png) name("Graph") width(600)height(450) replace
 */
 
 /*【1】---------------type1 patent application---------------*/
@@ -360,7 +366,7 @@ coefplot est*, keep(after_grant)	///
 
 /*	levels(95) legend(label(2 "前一年") label(4 "前二年") ///
 	label(6 "前三年") label(8 "前四年") label(10 "前五年"))		*/	
-graph export "F:\基金研究\graph_patent\ols_type1_patent_application.png", as(png) name("Graph") width(600)height(450) replace
+graph export "`project_path'/graph_patent/ols_type1_patent_application.png", as(png) name("Graph") width(600)height(450) replace
 
 
 
@@ -441,8 +447,8 @@ foreach i of varlist `y' {
 		star(* 0.10 ** 0.05 *** 0.01) se r2
 }
 
-ptgranted1_lead1 ptgranted1_next3 ptgranted1_next4 ptgranted1_next5 
-
+/* ptgranted1_lead1 ptgranted1_next3 ptgranted1_next4 ptgranted1_next5 
+ */
 
 *********************************
 * Impacts on type1 patent granted numbers (cumulative sum) plot
@@ -489,7 +495,7 @@ coefplot est*, keep(after_grant)	///
 
 /*	levels(95) legend(label(2 "前一年") label(4 "前二年") ///
 	label(6 "前三年") label(8 "前四年") label(10 "前五年"))		*/	
-graph export "F:\基金研究\graph_patent\ols_type1_patent_granted.png", as(png) name("Graph") width(600)height(450) replace
+graph export "`project_path'/graph_patent/ols_type1_patent_granted.png", as(png) name("Graph") width(600)height(450) replace
 
 
 
@@ -604,7 +610,7 @@ coefplot est*, keep(after_grant)	///
 	label(6 "前三年") label(8 "前四年") label(10 "前五年"))		*/	
 *graph export "F:\基金研究\graph_patent\ols_type1_patent_granted.png", as(png) name("Graph") width(600)height(450) replace
 
-graph export "F:\基金研究\graph_patent\ols_type1_patent_grantrate.png", as(png) name("Graph") width(600)height(450) replace
+graph export "`project_path'/graph_patent/ols_type1_patent_grantrate.png", as(png) name("Graph") width(600)height(450) replace
 
 
 
@@ -673,7 +679,7 @@ estimates clear
 	esttab, keep(after_grant ) ///
 		star(* 0.10 ** 0.05 *** 0.01) se r2*/
 
-
+** end**
 
 
 

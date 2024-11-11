@@ -14,7 +14,11 @@ collapse (sum) tt=i, by(name)
 */
 
 ***专利申请与授予数据：包括申请成功和失败的***
-import excel "F:\基金研究\data\山东大学专利汇总（申请日为20130101至20221031期间）已修改.xlsx", sheet("Sheet1") firstrow allstring clear
+local project_path "/Users/yansong/Dropbox/nutstore_files/基金研究"
+import excel "`project_path'/data/山东大学专利汇总（申请日为20130101至20221031期间）已修改.xlsx", sheet("Sheet1") firstrow allstring clear
+
+
+** 检查license是否重复
 sort license
 bys license: g dup = cond(_N==1,0,_n)
 tab dup
@@ -26,14 +30,22 @@ tab dup
 ------------+-----------------------------------
       Total |     20,720      100.00
 */
-tab type if dup!=0
+
+** 这里 grant_year 的missing value 是否可以从其他变量infer?
+gen grant_year = substr(grant_date, 1, 4)
+gen app_year = substr(app_date, 1, 4)
+
+
+/* tab type if dup!=0
 tab grant_year if dup!=0
-tab app_year if dup!=0
+tab app_year if dup!=0 */
+
+* 这部分代码目的?
 count if dup==1&strpos(license,"A")&strpos(license,"B")  //1488  同一个专利号分AB两个版本
 count if dup==1&strpos(license,"A")&!strpos(license,"B")  //1216 同一个专利号出现两次
 count if dup==1&!strpos(license,"A")&strpos(license,"B")  //0
 count if dup==1&!strpos(license,"A")&!strpos(license,"B")  //360  均为实用新型与外观设计
-   count if type=="实用新型"|type=="外观设计"   //2716  实用新型与外观设计结尾为U和S
+count if type=="实用新型"|type=="外观设计"   //2716  实用新型与外观设计结尾为U和S
  
 g lastletter=substr(license,-1,1)
 tab lastletter
@@ -56,22 +68,27 @@ tab type
 tab owner  //同一个专利可以多方联合持有
 
 tab app_date
-g app_year=substr(app_date,1,4)
+* g app_year=substr(app_date,1,4)
 tab app_year
-g grant_year=substr(grant_date,1,4)
+*g grant_year=substr(grant_date,1,4)
 tab authorized if grant_year==""  //所有无授权日期的都是未授权的
 tab authorized if grant_year!=""  //所有有授权日期的都是曾经授权的
 //通过是否有授权日期确定该专利申请是否获得授权
 
+
+** 这里目的是? 如果不需要的话可以删除或者标注掉
 g shouquan1=1 if authorized=="是"
 g shouquan2=1 if grant_date!=""
 count if shouquan1!=shouquan2
 g shouquan3=1 if strpos(license,"B")
 drop shouquan1 shouquan2 shouquan3
+
+
 ****************************************
 /*生成数据为每人名+每申请年申请的三种类型专利数量，及最终获得授权的专利数量*/
 //takeing the same name as the same person
-//assumption: prob of having the same name is independent from the prob of patent application
+
+//assumption: prob of having the same name is independent from the prob of patent application？ 这句什么意思
 
 drop if dup==2  //删除重复录入的专利
 
@@ -81,15 +98,26 @@ order name, last
 drop if name==""
 sort name app_year grant_year
 tab grant_year
-replace grant_year="9999" if grant_year==""
+
+* 这里replace的值是给没有授权的专利?
+replace grant_year="9999" if grant_year=="" 
 sort name license
 
-
 g i=1
+
+gen year = 
+
+
+
+* 这里为何要 reshape, collapse, 再reshape? 能否简洁表达? 
+original code
+* 目的: 
 collapse (sum)  number=i, by(name app_year type grant_year)
 order name app_year type grant_year
 reshape wide number, i(name app_year type) j(grant_year) string
 
+
+* ??
 egen tt_applied=rowtotal(number2013-number9999)
 egen tt_granted=rowtotal(number2013-number2022)
 drop number*
@@ -113,18 +141,15 @@ rename name 申请人
 rename app_year year
 destring year, replace
 tab year
-save "F:\基金研究\data\patent2013-2022.dta", replace
 
-
-
-use "F:\基金研究\data\patent2013-2022.dta", clear
 
 bys 申请人 year: g dup = cond(_N==1,0,_n)
 tab dup  //no repeat time within panel
 rename 申请人 姓名
 rename year 年份
-drop dup
-save "F:\基金研究\data\patent2013-2022.dta", replace
+drop dup 
+
+save "`project_path'/data/patent2013-2022.dta", replace
 
 
 
